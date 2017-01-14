@@ -38,7 +38,7 @@ void LcdInit(void) {
     I2C1->TIMINGR = 0x20503F5C;
     I2C1->CR1 = I2C_CR1_TXDMAEN | I2C_CR1_PE;
 
-    //TIM7 | 1000Hz interrupt
+    //TIM7 | 10000Hz interrupt
     RCC->APB1ENR |= RCC_APB1ENR_TIM7EN;
     TIM7->ARR = (FREQ / 10000) - 1;
     TIM7->DIER = TIM_DIER_UIE;
@@ -66,7 +66,7 @@ void LcdClear(void) {
     cmd.data = HD44780_CLEAR;
     cmd.type = LCD_COMMAND;
     cmd.mode = LCD_BYTE;
-    cmd.delay = 2;
+    cmd.delay = 20;
     LcdFifoPush(cmd);
 }
 
@@ -75,7 +75,7 @@ void LcdHome(void) {
     cmd.data = HD44780_HOME;
     cmd.type = LCD_COMMAND;
     cmd.mode = LCD_BYTE;
-    cmd.delay = 2;
+    cmd.delay = 20;
     LcdFifoPush(cmd);
 }
 
@@ -170,7 +170,7 @@ static void LcdWrite(uint8_t type, uint8_t mode, uint8_t data) {
 
 static void LcdWriteNibble(uint8_t data, uint8_t delay) {
     LcdCommand cmd;
-    cmd.data = 0x03;
+    cmd.data = data;
     cmd.type = LCD_COMMAND;
     cmd.mode = LCD_NIBBLE;
     cmd.delay = delay > 0x3F ? 0x3F : delay;

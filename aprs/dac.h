@@ -8,12 +8,11 @@
 #ifndef APRS_DAC_H_
 #define APRS_DAC_H_
 
-#define SINE_WAVETABLE_SIZE 64
-#define SQUARE_WAVETABLE_SIZE 2
+#define SINE_WAVETABLE_SIZE     64
+#define SQUARE_WAVETABLE_SIZE   2
 
 enum WaveTable {
-	SINE_WAVE,
-	SQUARE_WAVE,
+    SINE_WAVE, SQUARE_WAVE,
 };
 
 void DacInit(void);

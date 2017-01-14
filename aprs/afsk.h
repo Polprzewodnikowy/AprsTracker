@@ -10,15 +10,15 @@
 
 #include <stddef.h>
 
-#define PTT_GPIO				GPIOA
-#define PTT_PIN					5
+#define PTT_GPIO            GPIOA
+#define PTT_PIN             5
 
-#define AFSK_FIFO_SIZE			330
+#define AFSK_FIFO_SIZE      330
 
-#define AFSK_BAUD				1200
+#define AFSK_BAUD           1200
 
-#define AFSK_MARK_TONE			1200
-#define AFSK_SPACE_TONE			2200
+#define AFSK_MARK_TONE      1200
+#define AFSK_SPACE_TONE     2200
 
 void AfskInit(void);
 void AfskTxStart(void);

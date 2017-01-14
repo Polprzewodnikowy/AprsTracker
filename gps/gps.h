@@ -10,7 +10,7 @@
 
 #include "minmea.h"
 
-#define GPS_BUFFER_SIZE	128
+#define GPS_BUFFER_SIZE 128
 
 void GpsInit(void);
 int GpsIsValid(void);

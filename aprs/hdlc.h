@@ -8,8 +8,8 @@
 #ifndef APRS_HDLC_H_
 #define APRS_HDLC_H_
 
-#define HDLC_FLAG	0x7E
-#define HDLC_RESET	0x7F
-#define AX25_ESC	0x1B
+#define HDLC_FLAG   0x7E
+#define HDLC_RESET  0x7F
+#define AX25_ESC    0x1B
 
 #endif /* APRS_HDLC_H_ */

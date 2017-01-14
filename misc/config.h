@@ -11,14 +11,14 @@
 #include "aprs.h"
 
 typedef struct {
-	AX25Call call, path[2];
-	char parkSymbol, driveSymbol, parkSymbolTable, driveSymbolTable;
-	uint8_t parkMiceMessage, driveMiceMessage;
-	int preambleLength, tailLength;
-	int lowSpeed, highSpeed, slowRate, fastRate;
-	int turnAngle, turnSlope, turnDelay;
-	uint32_t gpsBaud;
-	uint32_t crc;
+    AX25Call call, path[2];
+    char parkSymbol, driveSymbol, parkSymbolTable, driveSymbolTable;
+    uint8_t parkMiceMessage, driveMiceMessage;
+    int preambleLength, tailLength;
+    int lowSpeed, highSpeed, slowRate, fastRate;
+    int turnAngle, turnSlope, turnDelay;
+    uint32_t gpsBaud;
+    uint32_t crc;
 } Config;
 
 void ConfigInit(void);

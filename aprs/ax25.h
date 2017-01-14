@@ -10,23 +10,23 @@
 
 #include <stddef.h>
 
-#define AX25_CTRL_UI		0x03
-#define AX25_PID_NOLAYER3	0xF0
+#define AX25_CTRL_UI        0x03
+#define AX25_PID_NOLAYER3   0xF0
 
 typedef struct {
-	char callsign[6];
-	uint8_t ssid;
+    char callsign[6];
+    uint8_t ssid;
 } AX25Call;
 
 typedef struct {
-	AX25Call source;
-	AX25Call destination;
-	AX25Call path[8];
-	uint8_t pathLength;
-	uint8_t controlField;
-	uint8_t protocolId;
-	char *information;
-	size_t infoLength;
+    AX25Call source;
+    AX25Call destination;
+    AX25Call path[8];
+    uint8_t pathLength;
+    uint8_t controlField;
+    uint8_t protocolId;
+    char *information;
+    size_t infoLength;
 } AX25Msg;
 
 void AX25Init(void);

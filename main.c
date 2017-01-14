@@ -10,23 +10,21 @@
 
 volatile int trackerTimer, trackerUpdate;
 
-int main(void)
-{
-	trackerTimer = 0;
-	trackerUpdate = 1;
-	SysTick_Config(FREQ / 1000);
-	while (1) {
-		if (trackerUpdate) {
-			trackerUpdate = 0;
-			TrackerUpdate();
-		}
-	}
+int main(void) {
+    trackerTimer = 0;
+    trackerUpdate = 1;
+    SysTick_Config(FREQ / 1000);
+    while (1) {
+        if (trackerUpdate) {
+            trackerUpdate = 0;
+            TrackerUpdate();
+        }
+    }
 }
 
-void SysTick_Handler(void)
-{
-	if (trackerTimer++ >= 1000) {
-		trackerTimer = 0;
-		trackerUpdate = 1;
-	}
+void SysTick_Handler(void) {
+    if (trackerTimer++ >= 1000) {
+        trackerTimer = 0;
+        trackerUpdate = 1;
+    }
 }

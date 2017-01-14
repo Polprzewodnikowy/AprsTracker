@@ -26,180 +26,166 @@ static char AfskFifoPop(void);
 static uint8_t AfskFifoIsEmpty(void);
 static uint8_t AfskFifoIsFull(void);
 
-void AfskInit(void)
-{
-	Config *c = ConfigGet();
+void AfskInit(void) {
+    Config *config = ConfigGet();
 
-	DacInit();
+    DacInit();
 
-	GpioConfig(PTT_GPIO, PTT_PIN, GPIO_OUT_PP_HIGH);
+    GpioConfig(PTT_GPIO, PTT_PIN, GPIO_OUT_PP_HIGH);
 
-	//TIM14 | 1200Hz interrupt
-	RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
-	TIM14->ARR = (FREQ / AFSK_BAUD) - 1;
-	TIM14->DIER = TIM_DIER_UIE;
-	TIM14->CR1 = TIM_CR1_ARPE | TIM_CR1_URS;
-	NVIC_SetPriority(TIM14_IRQn, 0);
-	NVIC_EnableIRQ(TIM14_IRQn);
+    //TIM14 | 1200Hz interrupt
+    RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
+    TIM14->ARR = (FREQ / AFSK_BAUD) - 1;
+    TIM14->DIER = TIM_DIER_UIE;
+    TIM14->CR1 = TIM_CR1_ARPE | TIM_CR1_URS;
+    NVIC_SetPriority(TIM14_IRQn, 0);
+    NVIC_EnableIRQ(TIM14_IRQn);
 
-	preambleRemaining = 0;
-	tailRemaining = 0;
-	bitStuffCount = 0;
-	bitStuffAllowed = 0;
-	currentByte = 0;
-	currentBit = 0;
-	preambleLength = (c->preambleLength * 100) / (100000 / (AFSK_BAUD / 8));
-	tailLength = (c->tailLength * 100) / (100000 / (AFSK_BAUD / 8));
-	fifoIn = fifoOut = fifo;
+    preambleRemaining = 0;
+    tailRemaining = 0;
+    bitStuffCount = 0;
+    bitStuffAllowed = 0;
+    currentByte = 0;
+    currentBit = 0;
+    preambleLength = (config->preambleLength * 100) / (100000 / (AFSK_BAUD / 8));
+    tailLength = (config->tailLength * 100) / (100000 / (AFSK_BAUD / 8));
+    fifoIn = fifoOut = fifo;
 }
 
-void AfskSetPreambleLength(uint32_t length)
-{
-	preambleLength = length;
+void AfskSetPreambleLength(uint32_t length) {
+    preambleLength = length;
 }
 
-void AfskSetTailLength(uint32_t length)
-{
-	tailLength = length;
+void AfskSetTailLength(uint32_t length) {
+    tailLength = length;
 }
 
-void AfskTxStart(void)
-{
-	if (!sending) {
-		sending = 1;
-		preambleRemaining = preambleLength;
-		tailRemaining = tailLength;
-		AfskStartTone(AFSK_MARK_TONE);
-		AfskSetPTT(1);
-		TIM14->CR1 |= TIM_CR1_CEN;
-	}
+void AfskTxStart(void) {
+    if (!sending) {
+        sending = 1;
+        preambleRemaining = preambleLength;
+        tailRemaining = tailLength;
+        AfskStartTone(AFSK_MARK_TONE);
+        AfskSetPTT(1);
+        TIM14->CR1 |= TIM_CR1_CEN;
+    }
 }
 
-void AfskTxStop(void)
-{
-	if (sending) {
-		TIM14->CR1 &= ~TIM_CR1_CEN;
-		AfskStopTone();
-		AfskSetPTT(0);
-		sending = 0;
-	}
+void AfskTxStop(void) {
+    if (sending) {
+        TIM14->CR1 &= ~TIM_CR1_CEN;
+        AfskStopTone();
+        AfskSetPTT(0);
+        sending = 0;
+    }
 }
 
-void AfskPutChar(char c)
-{
-	AfskTxStart();
-	while (AfskFifoIsFull()) { }
-	AfskFifoPush(c);
+void AfskPutChar(char c) {
+    AfskTxStart();
+    while (AfskFifoIsFull())
+        ;
+    AfskFifoPush(c);
 }
 
-void AfskTransmit(char *buffer, size_t size)
-{
-	for (size_t i = 0; i < size; i++) {
-		AfskPutChar(buffer[i]);
-	}
+void AfskTransmit(char *buffer, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        AfskPutChar(buffer[i]);
+    }
 }
 
-void TIM14_IRQHandler(void)
-{
-	TIM14->SR = ~TIM_SR_UIF;
+void TIM14_IRQHandler(void) {
+    TIM14->SR = ~TIM_SR_UIF;
 
-	if (currentBit == 0) {
-		if (AfskFifoIsEmpty() && !tailRemaining) {
-			AfskTxStop();
-			return;
-		} else {
-			if (!bitStuffAllowed)
-				bitStuffCount = 0;
-			bitStuffAllowed = 1;
-			if (!preambleRemaining) {
-				if (AfskFifoIsEmpty()) {
-					--tailRemaining;
-					currentByte = HDLC_FLAG;
-				} else {
-					tailRemaining = tailLength;
-					currentByte = AfskFifoPop();
-				}
-			} else {
-				--preambleRemaining;
-				currentByte = HDLC_FLAG;
-			}
-			if (currentByte == AX25_ESC) {
-				if (AfskFifoIsEmpty()) {
-					AfskTxStop();
-				} else {
-					currentByte = AfskFifoPop();
-				}
-			} else if (currentByte == HDLC_FLAG || currentByte == HDLC_RESET) {
-				bitStuffAllowed = 0;
-			}
-		}
-		currentBit = 1;
-	}
+    if (currentBit == 0) {
+        if (AfskFifoIsEmpty() && !tailRemaining) {
+            AfskTxStop();
+            return;
+        } else {
+            if (!bitStuffAllowed)
+                bitStuffCount = 0;
+            bitStuffAllowed = 1;
+            if (!preambleRemaining) {
+                if (AfskFifoIsEmpty()) {
+                    --tailRemaining;
+                    currentByte = HDLC_FLAG;
+                } else {
+                    tailRemaining = tailLength;
+                    currentByte = AfskFifoPop();
+                }
+            } else {
+                --preambleRemaining;
+                currentByte = HDLC_FLAG;
+            }
+            if (currentByte == AX25_ESC) {
+                if (AfskFifoIsEmpty()) {
+                    AfskTxStop();
+                } else {
+                    currentByte = AfskFifoPop();
+                }
+            } else if (currentByte == HDLC_FLAG || currentByte == HDLC_RESET) {
+                bitStuffAllowed = 0;
+            }
+        }
+        currentBit = 1;
+    }
 
-	if(bitStuffAllowed && bitStuffCount >= 5) {
-		AfskSwitchTone();
-		bitStuffCount = 0;
-	} else {
-		if (currentByte & currentBit) {
-			++bitStuffCount;
-		} else {
-			AfskSwitchTone();
-			bitStuffCount = 0;
-		}
-		currentBit <<= 1;
-	}
+    if (bitStuffAllowed && bitStuffCount >= 5) {
+        AfskSwitchTone();
+        bitStuffCount = 0;
+    } else {
+        if (currentByte & currentBit) {
+            ++bitStuffCount;
+        } else {
+            AfskSwitchTone();
+            bitStuffCount = 0;
+        }
+        currentBit <<= 1;
+    }
 }
 
-static void AfskSwitchTone(void)
-{
-	if(lastTone == AFSK_MARK_TONE)
-		lastTone = AFSK_SPACE_TONE;
-	else if(lastTone == AFSK_SPACE_TONE)
-		lastTone = AFSK_MARK_TONE;
-	DacChangeFrequency(lastTone);
+static void AfskSwitchTone(void) {
+    if (lastTone == AFSK_MARK_TONE)
+        lastTone = AFSK_SPACE_TONE;
+    else if (lastTone == AFSK_SPACE_TONE)
+        lastTone = AFSK_MARK_TONE;
+    DacChangeFrequency(lastTone);
 }
 
-static void AfskStartTone(uint32_t tone)
-{
-	DacSetWaveTableSource(DacGetPredefinedWaveTable(SINE_WAVE), SINE_WAVETABLE_SIZE);
-	DacChangeFrequency(tone);
-	lastTone = tone;
+static void AfskStartTone(uint32_t tone) {
+    DacSetWaveTableSource(DacGetPredefinedWaveTable(SINE_WAVE),
+    SINE_WAVETABLE_SIZE);
+    DacChangeFrequency(tone);
+    lastTone = tone;
 }
 
-static void AfskStopTone(void)
-{
-	DacStopWaveGeneration();
+static void AfskStopTone(void) {
+    DacStopWaveGeneration();
 }
 
-static void AfskSetPTT(uint8_t state)
-{
-	if(state)
-		PTT_GPIO->BSRR = 1 << PTT_PIN;
-	else
-		PTT_GPIO->BRR = 1 << PTT_PIN;
+static void AfskSetPTT(uint8_t state) {
+    if (state)
+        PTT_GPIO->BSRR = 1 << PTT_PIN;
+    else
+        PTT_GPIO->BRR = 1 << PTT_PIN;
 }
 
-static void AfskFifoPush(char c)
-{
-	*fifoIn++ = c;
-	if(fifoIn >= (fifo + AFSK_FIFO_SIZE))
-		fifoIn = fifo;
+static void AfskFifoPush(char c) {
+    *fifoIn++ = c;
+    if (fifoIn >= (fifo + AFSK_FIFO_SIZE))
+        fifoIn = fifo;
 }
 
-static char AfskFifoPop(void)
-{
-	char c = *fifoOut++;
-	if(fifoOut >= (fifo + AFSK_FIFO_SIZE))
-			fifoOut = fifo;
-	return c;
+static char AfskFifoPop(void) {
+    char c = *fifoOut++;
+    if (fifoOut >= (fifo + AFSK_FIFO_SIZE))
+        fifoOut = fifo;
+    return c;
 }
 
-static uint8_t AfskFifoIsEmpty(void)
-{
-	return fifoIn == fifoOut;
+static uint8_t AfskFifoIsEmpty(void) {
+    return fifoIn == fifoOut;
 }
 
-static uint8_t AfskFifoIsFull(void)
-{
-	return (((fifoOut == fifo) && (fifoIn == (fifo + AFSK_FIFO_SIZE - 1))) || (fifoIn == (fifoOut - 1)));
+static uint8_t AfskFifoIsFull(void) {
+    return (((fifoOut == fifo) && (fifoIn == (fifo + AFSK_FIFO_SIZE - 1))) || (fifoIn == (fifoOut - 1)));
 }

@@ -9,18 +9,11 @@
 #define APRS_CRC_H_
 
 enum CrcPoly {
-	CRC_POLY_7,
-	CRC_POLY_8,
-	CRC_POLY_16,
-	CRC_POLY_32,
+    CRC_POLY_7, CRC_POLY_8, CRC_POLY_16, CRC_POLY_32,
 };
 
 enum CrcInv {
-	CRC_NO_INV,
-	CRC_INV_BYTE,
-	CRC_INV_HALFWORD,
-	CRC_INV_WORD,
-	CRC_INV,
+    CRC_NO_INV, CRC_INV_BYTE, CRC_INV_HALFWORD, CRC_INV_WORD, CRC_INV,
 };
 
 void CrcInit(uint32_t poly, uint32_t init, enum CrcPoly polyWidth, enum CrcInv invIn, enum CrcInv invOut);

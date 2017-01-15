@@ -59,8 +59,9 @@ static void TrackerDisplayUpdate(void) {
     int course = minmea_rescale(&rmc->course, 1);
 
     char text[2][17];
-    memset(text[0], ' ', 17);
-    memset(text[1], ' ', 17);
+    memset(text[0], ' ', 16);
+    memset(text[1], ' ', 16);
+    text[0][16] = text[1][16] = 0;
 
     text[0][0] = ' ';
     text[0][1] = '0' + ((lat / 100000) % 10);
@@ -119,7 +120,8 @@ void TrackerUpdate(void) {
             }
 
             int turnThreshold = turnAngle + (turnSlope / speed);
-            int courseDifference = abs(course - lastCourse);
+            int courseDifference = abs(course - lastCourse) % 360;
+            courseDifference = courseDifference > 180 ? 360 - courseDifference : courseDifference;
 
             if (courseDifference >= turnThreshold && beaconTimer >= turnDelay) {
                 beaconTimer = beaconRate;

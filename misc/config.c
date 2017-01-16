@@ -26,8 +26,8 @@ void ConfigInit(void) {
     config.tailLength = 20;
     config.lowSpeed = 10;
     config.highSpeed = 60;
-    config.slowRate = 1800;
-    config.fastRate = 60;
+    config.slowRate = 600;
+    config.fastRate = 30;
     config.turnAngle = 10;
     config.turnSlope = 400;
     config.turnDelay = 5;

@@ -116,7 +116,7 @@ void TrackerUpdate(void) {
             if (speed > highSpeed) {
                 beaconRate = fastRate;
             } else {
-                beaconRate = fastRate * highSpeed / speed;
+                beaconRate = (fastRate * highSpeed) / speed;
             }
 
             int turnThreshold = turnAngle + (turnSlope / speed);

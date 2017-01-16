@@ -17,38 +17,43 @@ static void LcdWrite(uint8_t type, uint8_t mode, uint8_t data);
 static void LcdWriteNibble(uint8_t data, uint8_t delay);
 static void LcdFifoPush(LcdCommand c);
 static LcdCommand LcdFifoPop(void);
+static void LcdFifoFlush(void);
 static uint8_t LcdFifoIsEmpty(void);
-static uint8_t LcdFifoIsFull(void);
+//static uint8_t LcdFifoIsFull(void);
 
 static uint8_t dmaBuffer[7];
 
 void LcdInit(void) {
     fifoIn = fifoOut = fifo;
 
-    GpioConfig(GPIOB, 8, GPIO_AF1_OD_LOW_PULL_UP);
-    GpioConfig(GPIOB, 9, GPIO_AF1_OD_LOW_PULL_UP);
+    GpioConfig(GPIOB, 10, GPIO_AF1_OD_LOW_PULL_UP);
+    GpioConfig(GPIOB, 11, GPIO_AF1_OD_LOW_PULL_UP);
 
-    DMA1_Channel2->CMAR = (uint32_t) &dmaBuffer;
-    DMA1_Channel2->CPAR = (uint32_t) &I2C1->TXDR;
-    DMA1_Channel2->CNDTR = 7;
-    DMA1_Channel2->CCR = DMA_CCR_MINC | DMA_CCR_DIR;
+    DMA1_Channel4->CMAR = (uint32_t) &dmaBuffer;
+    DMA1_Channel4->CPAR = (uint32_t) &I2C2->TXDR;
+    DMA1_Channel4->CNDTR = 7;
+    DMA1_Channel4->CCR = DMA_CCR_MINC | DMA_CCR_DIR;
 
-    RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
-    I2C1->CR2 = I2C_CR2_AUTOEND | (7 << I2C_CR2_NBYTES_Pos) | (LCD_I2C_ADDR << 1);
-    I2C1->TIMINGR = 0x30E32E37;
-    I2C1->CR1 = I2C_CR1_TXDMAEN | I2C_CR1_PE;
+    RCC->APB1RSTR |= RCC_APB1RSTR_I2C2RST;
+    RCC->APB1RSTR &= ~RCC_APB1RSTR_I2C2RST;
+    RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;
+    I2C2->CR2 = I2C_CR2_AUTOEND | (7 << I2C_CR2_NBYTES_Pos) | (LCD_I2C_ADDR << 1);
+    I2C2->TIMINGR = 0x30E32E37;
+    I2C2->CR1 = I2C_CR1_TXDMAEN | I2C_CR1_PE;
 
-    //TIM7 | 10000Hz interrupt
+    //TIM7 | 1000Hz interrupt
+    RCC->APB1RSTR |= RCC_APB1RSTR_TIM7RST;
+    RCC->APB1RSTR &= ~RCC_APB1RSTR_TIM7RST;
     RCC->APB1ENR |= RCC_APB1ENR_TIM7EN;
-    TIM7->ARR = (FREQ / 10000) - 1;
+    TIM7->ARR = (FREQ / 1000) - 1;
     TIM7->DIER = TIM_DIER_UIE;
     TIM7->CR1 = TIM_CR1_ARPE | TIM_CR1_URS | TIM_CR1_CEN;
     NVIC_SetPriority(TIM7_IRQn, 3);
     NVIC_EnableIRQ(TIM7_IRQn);
 
     for (int i = 0; i < 3; i++)
-        LcdWriteNibble(0x03, 50);
-    LcdWriteNibble(0x02, 10);
+        LcdWriteNibble(0x03, 5);
+    LcdWriteNibble(0x02, 1);
     LcdWriteCommand(HD44780_FUNCTION_SET | HD44780_FONT5x7 | HD44780_TWO_LINE | HD44780_4_BIT);
     LcdWriteCommand(HD44780_DISPLAY_ONOFF | HD44780_DISPLAY_OFF);
     LcdWriteCommand(HD44780_CLEAR);
@@ -66,7 +71,7 @@ void LcdClear(void) {
     cmd.data = HD44780_CLEAR;
     cmd.type = LCD_COMMAND;
     cmd.mode = LCD_BYTE;
-    cmd.delay = 20;
+    cmd.delay = 2;
     LcdFifoPush(cmd);
 }
 
@@ -75,7 +80,7 @@ void LcdHome(void) {
     cmd.data = HD44780_HOME;
     cmd.type = LCD_COMMAND;
     cmd.mode = LCD_BYTE;
-    cmd.delay = 20;
+    cmd.delay = 2;
     LcdFifoPush(cmd);
 }
 
@@ -109,14 +114,20 @@ void LcdWriteText(char *text) {
 void TIM7_IRQHandler(void) {
     TIM7->SR = ~TIM_SR_UIF;
     static uint8_t delay = 0;
-    if (delay) {
-        --delay;
+    if ((I2C2->ISR & I2C_ISR_NACKF) || (I2C2->ISR & I2C_ISR_ARLO) || (I2C2->ISR & I2C_ISR_BERR)) {
+        I2C2->ICR = I2C_ICR_NACKCF | I2C_ICR_ARLOCF | I2C_ICR_BERRCF;
+        LcdFifoFlush();
+        LcdInit();
     } else {
-        if ((!(DMA1_Channel2->CCR & DMA_CCR_EN) || (DMA1->ISR & DMA_ISR_TCIF2)) && !LcdFifoIsEmpty()) {
-            DMA1->IFCR = DMA_IFCR_CTCIF2;
-            LcdCommand cmd = LcdFifoPop();
-            delay = cmd.delay;
-            LcdWrite(cmd.type, cmd.mode, cmd.data);
+        if (delay) {
+            --delay;
+        } else {
+            if ((!(DMA1_Channel4->CCR & DMA_CCR_EN) || (DMA1->ISR & DMA_ISR_TCIF4)) && !LcdFifoIsEmpty()) {
+                DMA1->IFCR = DMA_IFCR_CTCIF4;
+                LcdCommand cmd = LcdFifoPop();
+                delay = cmd.delay;
+                LcdWrite(cmd.type, cmd.mode, cmd.data);
+            }
         }
     }
 }
@@ -161,11 +172,11 @@ static void LcdWrite(uint8_t type, uint8_t mode, uint8_t data) {
         size = 4;
     }
 
-    DMA1_Channel2->CCR &= ~DMA_CCR_EN;
-    I2C1->CR2 = I2C_CR2_AUTOEND | (size << I2C_CR2_NBYTES_Pos) | (LCD_I2C_ADDR << 1);
-    DMA1_Channel2->CNDTR = size;
-    DMA1_Channel2->CCR |= DMA_CCR_EN;
-    I2C1->CR2 |= I2C_CR2_START;
+    DMA1_Channel4->CCR &= ~DMA_CCR_EN;
+    I2C2->CR2 = I2C_CR2_AUTOEND | (size << I2C_CR2_NBYTES_Pos) | (LCD_I2C_ADDR << 1);
+    DMA1_Channel4->CNDTR = size;
+    DMA1_Channel4->CCR |= DMA_CCR_EN;
+    I2C2->CR2 |= I2C_CR2_START;
 }
 
 static void LcdWriteNibble(uint8_t data, uint8_t delay) {
@@ -178,8 +189,8 @@ static void LcdWriteNibble(uint8_t data, uint8_t delay) {
 }
 
 static void LcdFifoPush(LcdCommand cmd) {
-    while (LcdFifoIsFull())
-        ;
+    //while (LcdFifoIsFull())
+    //    ;
     *fifoIn++ = cmd;
     if (fifoIn >= (fifo + LCD_FIFO_SIZE))
         fifoIn = fifo;
@@ -192,10 +203,14 @@ static LcdCommand LcdFifoPop(void) {
     return data;
 }
 
+static void LcdFifoFlush(void) {
+    fifoIn = fifoOut = fifo;
+}
+
 static uint8_t LcdFifoIsEmpty(void) {
     return fifoIn == fifoOut;
 }
 
-static uint8_t LcdFifoIsFull(void) {
-    return (((fifoOut == fifo) && (fifoIn == (fifo + LCD_FIFO_SIZE - 1))) || (fifoIn == (fifoOut - 1)));
-}
+//static uint8_t LcdFifoIsFull(void) {
+//    return (((fifoOut == fifo) && (fifoIn == (fifo + LCD_FIFO_SIZE - 1))) || (fifoIn == (fifoOut - 1)));
+//}

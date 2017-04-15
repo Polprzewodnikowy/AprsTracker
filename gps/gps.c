@@ -28,7 +28,7 @@ void GpsInit(void) {
     DMA1_Channel6->CNDTR = GPS_BUFFER_SIZE;
     DMA1_Channel6->CCR = DMA_CCR_MINC | DMA_CCR_EN;
 
-    USART4->BRR = FREQ / config->gpsBaud;
+    USART4->BRR = FREQ / config->gps.baud;
     USART4->CR2 = '\n' << USART_CR2_ADD_Pos;
     USART4->CR3 = USART_CR3_OVRDIS | USART_CR3_DMAR;
     USART4->CR1 = USART_CR1_CMIE | USART_CR1_RE | USART_CR1_UE;

@@ -47,8 +47,8 @@ void AfskInit(void) {
     bitStuffAllowed = 0;
     currentByte = 0;
     currentBit = 0;
-    preambleLength = (config->preambleLength * 100) / (100000 / (AFSK_BAUD / 8));
-    tailLength = (config->tailLength * 100) / (100000 / (AFSK_BAUD / 8));
+    preambleLength = (config->afsk.preamble * 100) / (100000 / (AFSK_BAUD / 8));
+    tailLength = (config->afsk.tail * 100) / (100000 / (AFSK_BAUD / 8));
     fifoIn = fifoOut = fifo;
 }
 

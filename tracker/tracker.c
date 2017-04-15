@@ -14,40 +14,79 @@
 #include "config.h"
 #include "lcd.h"
 
+static Config *config;
 static struct minmea_sentence_rmc *rmc;
 static struct minmea_sentence_gga *gga;
-static int beaconRate, beaconTimer, lastCourse;
+static int beaconRate, beaconTimer, lastCourse, statusTimer;
 static uint8_t miceMessage;
 static char symbol, symbolTable;
-static AX25Call call, path1, path2;
-static int lowSpeed, highSpeed, slowRate, fastRate, turnAngle, turnSlope, turnDelay;
-static char parkSymbol, driveSymbol, parkSymbolTable, driveSymbolTable;
-static uint8_t parkMiceMessage, driveMiceMessage;
+
+static void TrackerDisplayUpdate(void);
 
 void TrackerInit(void) {
-    Config *config = ConfigGet();
-    call = config->call;
-    path1 = config->path[0];
-    path2 = config->path[1];
-    lowSpeed = config->lowSpeed;
-    highSpeed = config->highSpeed;
-    slowRate = config->slowRate;
-    fastRate = config->fastRate;
-    turnAngle = config->turnAngle;
-    turnSlope = config->turnSlope;
-    turnDelay = config->turnDelay;
-    parkSymbol = config->parkSymbol;
-    driveSymbol = config->driveSymbol;
-    parkSymbolTable = config->parkSymbolTable;
-    driveSymbolTable = config->driveSymbolTable;
-    parkMiceMessage = config->parkMiceMessage;
-    driveMiceMessage = config->driveMiceMessage;
-
+    config = ConfigGet();
     rmc = GpsGetRMC();
     gga = GpsGetGGA();
-    beaconRate = slowRate;
-    beaconTimer = slowRate;
+    beaconRate = config->rate.slow;
+    beaconTimer = config->rate.slow;
+    statusTimer = config->status.rate;
     lastCourse = 0;
+}
+
+void TrackerUpdate(void) {
+    if (GpsIsValid() && gga->satellites_tracked >= 3) {
+        int speed = minmea_rescale(&rmc->speed, 1);
+        int course = minmea_rescale(&rmc->course, 1);
+
+        if (speed < config->speed.low) {
+            beaconRate = config->rate.slow;
+            symbol = config->symbol.park;
+            symbolTable = config->symbolTable.park;
+            miceMessage = config->MicE.park;
+        } else {
+            if (speed > config->speed.high) {
+                beaconRate = config->rate.fast;
+            } else {
+                beaconRate = (config->rate.fast * config->speed.high) / speed;
+            }
+
+            int turnThreshold = config->turn.angle + (config->turn.slope / speed);
+            int courseDifference = abs(course - lastCourse) % 360;
+            courseDifference = courseDifference > 180 ? 360 - courseDifference : courseDifference;
+
+            if (courseDifference >= turnThreshold && beaconTimer >= config->turn.delay) {
+                beaconTimer = beaconRate;
+            }
+
+            symbol = config->symbol.drive;
+            symbolTable = config->symbolTable.drive;
+            miceMessage = config->MicE.drive;
+        }
+
+        if (beaconTimer >= beaconRate) {
+            AX25Call call, path1, path2;
+            AX25SetCall(&call, config->call.str, config->call.ssid);
+            AX25SetCall(&path1, config->path[0].str, config->path[0].ssid);
+            AX25SetCall(&path2, config->path[1].str, config->path[1].ssid);
+            AprsSendMicEPosition(rmc, gga, &call, &path1, &path2, miceMessage, 0, symbol, symbolTable);
+            beaconTimer = 0;
+            lastCourse = course;
+        }
+    }
+    if (statusTimer >= config->status.rate && config->status.length) {
+        AX25Msg status;
+        AX25InitFrame(&status);
+        AX25SetCall(&status.source, config->call.str, config->call.ssid);
+        AX25SetDestination(&status, "APZMF2", 0);
+        AX25AddPath(&status, config->path[0].str, config->path[0].ssid);
+        AX25AddPath(&status, config->path[1].str, config->path[1].ssid);
+        AX25SetInfo(&status, config->status.str, config->status.length);
+        AprsSendFrame(&status);
+        statusTimer = 0;
+    }
+    ++beaconTimer;
+    ++statusTimer;
+    TrackerDisplayUpdate();
 }
 
 static void TrackerDisplayUpdate(void) {
@@ -100,44 +139,4 @@ static void TrackerDisplayUpdate(void) {
     LcdWriteText(text[0]);
     LcdCursor(0, 1);
     LcdWriteText(text[1]);
-}
-
-void TrackerUpdate(void) {
-    if (GpsIsValid() && gga->satellites_tracked >= 3) {
-        int speed = minmea_rescale(&rmc->speed, 1);
-        int course = minmea_rescale(&rmc->course, 1);
-
-        if (speed < lowSpeed) {
-            beaconRate = slowRate;
-            symbol = parkSymbol;
-            symbolTable = parkSymbolTable;
-            miceMessage = parkMiceMessage;
-        } else {
-            if (speed > highSpeed) {
-                beaconRate = fastRate;
-            } else {
-                beaconRate = (fastRate * highSpeed) / speed;
-            }
-
-            int turnThreshold = turnAngle + (turnSlope / speed);
-            int courseDifference = abs(course - lastCourse) % 360;
-            courseDifference = courseDifference > 180 ? 360 - courseDifference : courseDifference;
-
-            if (courseDifference >= turnThreshold && beaconTimer >= turnDelay) {
-                beaconTimer = beaconRate;
-            }
-
-            symbol = driveSymbol;
-            symbolTable = driveSymbolTable;
-            miceMessage = driveMiceMessage;
-        }
-
-        if (beaconTimer >= beaconRate) {
-            AprsSendMicEPosition(rmc, gga, &call, &path1, &path2, miceMessage, 0, symbol, symbolTable);
-            beaconTimer = 0;
-            lastCourse = course;
-        }
-    }
-    ++beaconTimer;
-    TrackerDisplayUpdate();
 }

@@ -7,6 +7,7 @@
 
 #include "stm32f0xx.h"
 #include "gpio.h"
+#include "eeprom.h"
 #include "config.h"
 #include "lcd.h"
 #include "aprs.h"
@@ -34,6 +35,7 @@ void SystemInit(void) {
     RCC->AHBENR |= RCC_AHBENR_DMAEN;
 
     GpioInit();
+    EepromInit();
     ConfigInit();
     LcdInit();
     AprsInit();

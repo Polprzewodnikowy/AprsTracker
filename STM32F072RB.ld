@@ -7,11 +7,11 @@
 
 MEMORY
 {
-	rom (rx)	: org = 0x08000000, len = 128k
+	rom (rx)	: org = 0x08000000, len = 124k /* 128kB - 4kB for EEPROM emulation */
 	ram (rwx)	: org = 0x20000000, len = 16k
 }
 
-__stack_size = 1024;
+__stack_size = 2048;
 
 ENTRY(Reset_Handler);
 

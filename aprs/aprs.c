@@ -14,9 +14,6 @@
 #include "hdlc.h"
 #include "crc.h"
 
-static const char micECharset[33] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
-        'G', 'H', 'I', 'J', 'K', 'L', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', };
-
 void AprsInit(void) {
     AfskInit();
     AX25Init();
@@ -57,6 +54,9 @@ void AprsSendFrame(AX25Msg *frame) {
 
 void AprsSendMicEPosition(struct minmea_sentence_rmc *rmc, struct minmea_sentence_gga *gga, AX25Call *call,
         AX25Call *path1, AX25Call *path2, enum MicEMessage message, char *info, char symbol, char symbolTable) {
+    static const char micECharset[33] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E',
+            'F', 'G', 'H', 'I', 'J', 'K', 'L', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', };
+
     AX25Msg frame;
     AX25InitFrame(&frame);
     frame.source = *call;

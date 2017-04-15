@@ -5,6 +5,7 @@
  *      Author: korgeaux
  */
 
+#include <string.h>
 #include "stm32f0xx.h"
 #include "tracker.h"
 
@@ -12,8 +13,9 @@ volatile int trackerTimer, trackerUpdate;
 
 int main(void) {
     trackerTimer = 0;
-    trackerUpdate = 1;
+    trackerUpdate = 0;
     SysTick_Config(FREQ / 1000);
+
     while (1) {
         if (trackerUpdate) {
             trackerUpdate = 0;

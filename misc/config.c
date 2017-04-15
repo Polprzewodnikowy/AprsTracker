@@ -66,15 +66,15 @@ void ConfigInit(void) {
     EepromRead(13, &config.call.s1);
     EepromRead(14, &config.call.s2);
     EepromRead(15, &config.call.s3);
-    EepromRead(16, (uint16_t *) &config.call.ssid);
+    EepromRead(16, &config.call.ssid);
     EepromRead(17, &config.path[0].s1);
     EepromRead(18, &config.path[0].s2);
     EepromRead(19, &config.path[0].s3);
-    EepromRead(20, (uint16_t *) &config.path[0].ssid);
+    EepromRead(20, &config.path[0].ssid);
     EepromRead(21, &config.path[1].s1);
     EepromRead(22, &config.path[1].s2);
     EepromRead(23, &config.path[1].s3);
-    EepromRead(24, (uint16_t *) &config.path[1].ssid);
+    EepromRead(24, &config.path[1].ssid);
     EepromRead(25, &config.MicE.pd_combined);
 
     uint8_t status = EepromRead(100, &config.status.length);

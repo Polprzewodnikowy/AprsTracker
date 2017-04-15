@@ -26,7 +26,9 @@ uint8_t EepromFormat(void) {
 }
 
 uint8_t EepromWrite(uint16_t addr, uint16_t data) {
-    uint8_t status = EE_PAGE_FULL;
+    if (addr > EE_VAR_MAX) {
+        return EE_VADDR_TOO_HIGH;
+    }
 
     uint32_t page = FindValidPage();
 
@@ -41,20 +43,17 @@ uint8_t EepromWrite(uint16_t addr, uint16_t data) {
         if (va == 0xFFFF && ed == 0xFFFF) {
             FlashWriteHalfWord(i, addr);
             FlashWriteHalfWord(i + 2, data);
-            status = EE_OK;
-            return status;
+            return EE_OK;
         }
     }
 
-    if (status == EE_PAGE_FULL) {
-        status = TransferPage(addr, data);
-    }
-
-    return status;
+    return TransferPage(addr, data);
 }
 
 uint8_t EepromRead(uint16_t addr, uint16_t *data) {
-    uint8_t status = EE_VARIABLE_NOT_FOUND;
+    if (addr > EE_VAR_MAX) {
+        return EE_VADDR_TOO_HIGH;
+    }
 
     uint32_t page = FindValidPage();
 
@@ -67,13 +66,12 @@ uint8_t EepromRead(uint16_t addr, uint16_t *data) {
 
         if (va == addr) {
             *data = *(__IO uint16_t *) (i + 2);
-            status = EE_OK;
-            return status;
+            return EE_OK;
         }
     }
 
     *data = 0;
-    return status;
+    return EE_VARIABLE_NOT_FOUND;
 }
 
 static uint8_t TransferPage(uint16_t addr, uint16_t data) {
@@ -99,7 +97,7 @@ static uint8_t TransferPage(uint16_t addr, uint16_t data) {
 
     int pt = nextPage + 6;
 
-    for (int va = 0; va <= 0xFFFF; va++) {
+    for (int va = 0; va <= EE_VAR_MAX; va++) {
         uint16_t ed;
         uint8_t s = EepromRead(va, &ed);
         if (s == EE_OK) {

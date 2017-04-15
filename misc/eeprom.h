@@ -9,7 +9,7 @@
 #define MISC_EEPROM_H_
 
 enum {
-    EE_OK = 0, EE_NO_VALID_PAGE, EE_VARIABLE_NOT_FOUND, EE_PAGE_FULL,
+    EE_OK = 0, EE_NO_VALID_PAGE, EE_VARIABLE_NOT_FOUND, EE_PAGE_FULL, EE_VADDR_TOO_HIGH,
 };
 
 #define EE_START_ADDR   0x0801F000
@@ -26,6 +26,8 @@ enum {
 
 #define EE_VALID_PAGE   0x0000
 #define EE_EMPTY_PAGE   0xFFFF
+
+#define EE_VAR_MAX      (EE_PAGE_SIZE / 4)
 
 void EepromInit(void);
 uint8_t EepromFormat(void);

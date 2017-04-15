@@ -72,6 +72,9 @@ void TrackerUpdate(void) {
             beaconTimer = 0;
             lastCourse = course;
         }
+        GPIOC->BSRR = GPIO_BSRR_BS_9;
+    } else {
+        GPIOC->BSRR = GPIO_BSRR_BR_9;
     }
     if (statusTimer >= config->status.rate && config->status.length) {
         AX25Msg status;

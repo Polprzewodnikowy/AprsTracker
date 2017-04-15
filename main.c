@@ -25,6 +25,11 @@ int main(void) {
 }
 
 void SysTick_Handler(void) {
+    if (trackerTimer < 50) {
+        GPIOC->BSRR = GPIO_BSRR_BS_8;
+    } else {
+        GPIOC->BSRR = GPIO_BSRR_BR_8;
+    }
     if (trackerTimer++ >= 1000) {
         trackerTimer = 0;
         trackerUpdate = 1;

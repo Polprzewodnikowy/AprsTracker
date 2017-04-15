@@ -68,11 +68,13 @@ void AfskTxStart(void) {
         AfskStartTone(AFSK_MARK_TONE);
         AfskSetPTT(1);
         TIM14->CR1 |= TIM_CR1_CEN;
+        GPIOC->BSRR = GPIO_BSRR_BS_7;
     }
 }
 
 void AfskTxStop(void) {
     if (sending) {
+        GPIOC->BSRR = GPIO_BSRR_BR_7;
         TIM14->CR1 &= ~TIM_CR1_CEN;
         AfskStopTone();
         AfskSetPTT(0);

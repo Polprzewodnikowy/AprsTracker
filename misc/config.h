@@ -12,6 +12,31 @@
 
 #define CONFIG_VALID    0x55AA
 
+#define DEFAULT_PARK_SYMBOL         ('P')
+#define DEFAULT_PARK_SYMBOL_TABLE   ('\\')
+#define DEFAULT_PARK_MICE_MESSAGE   (MICE_OFF_DUTY)
+#define DEFAULT_DRIVE_SYMBOL        ('>')
+#define DEFAULT_DRIVE_SYMBOL_TABLE  ('5')
+#define DEFAULT_DRIVE_MICE_MESSAGE  (MICE_EN_ROUTE)
+#define DEFAULT_PREAMBLE_LENGTH     (500)
+#define DEFAULT_TAIL_LENGTH         (150)
+#define DEFAULT_LOW_SPEED           (10)
+#define DEFAULT_HIGH_SPEED          (60)
+#define DEFAULT_SLOW_RATE           (600)
+#define DEFAULT_FAST_RATE           (30)
+#define DEFAULT_TURN_SLOPE          (400)
+#define DEFAULT_TURN_ANGLE          (10)
+#define DEFAULT_TURN_DELAY          (5)
+#define DEFAULT_STATUS_RATE         (3600)
+#define DEFAULT_STATUS_TEXT         (">Default status text")
+#define DEFAULT_GPS_BAUD            (9600)
+#define DEFAULT_CALL                ("NOCALL")
+#define DEFAULT_CALL_SSID           (9)
+#define DEFAULT_PATH_1              ("WIDE1 ")
+#define DEFAULT_PATH_1_SSID         (1)
+#define DEFAULT_PATH_2              ("WIDE2 ")
+#define DEFAULT_PATH_2_SSID         (1)
+
 typedef struct {
     union {
         uint16_t pd_combined;

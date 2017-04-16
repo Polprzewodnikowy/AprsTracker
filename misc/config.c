@@ -18,36 +18,39 @@ void ConfigInit(void) {
     EepromRead(0, &valid);
     if (valid != CONFIG_VALID) {
         EepromWrite(0, CONFIG_VALID);
-        EepromWrite(1, 'P' | ('>' << 8));
-        EepromWrite(2, '\\' | ('5' << 8));
-        EepromWrite(3, 500);
-        EepromWrite(4, 150);
-        EepromWrite(5, 10 | (60 << 8));
-        EepromWrite(6, 600);
-        EepromWrite(7, 30);
-        EepromWrite(8, 400);
-        EepromWrite(9, 10 | (5 << 8));
-        EepromWrite(10, 1800);
-        EepromWrite(11, 9600 & 0xFFFF);
-        EepromWrite(12, 9600 >> 16);
-        EepromWrite(13, 'N' | ('O' << 8));
-        EepromWrite(14, 'C' | ('A' << 8));
-        EepromWrite(15, 'L' | ('L' << 8));
-        EepromWrite(16, 0);
-        EepromWrite(17, 'W' | ('I' << 8));
-        EepromWrite(18, 'D' | ('E' << 8));
-        EepromWrite(19, '1' | (' ' << 8));
-        EepromWrite(20, 1);
-        EepromWrite(21, 'W' | ('I' << 8));
-        EepromWrite(22, 'D' | ('E' << 8));
-        EepromWrite(23, '2' | (' ' << 8));
-        EepromWrite(24, 1);
-        EepromWrite(25, MICE_OFF_DUTY | (MICE_EN_ROUTE << 8));
-        char *info = "Insert your info here";
+        EepromWrite(1, DEFAULT_PARK_SYMBOL | (DEFAULT_DRIVE_SYMBOL << 8));
+        EepromWrite(2, DEFAULT_PARK_SYMBOL_TABLE | (DEFAULT_DRIVE_SYMBOL_TABLE << 8));
+        EepromWrite(3, DEFAULT_PREAMBLE_LENGTH);
+        EepromWrite(4, DEFAULT_TAIL_LENGTH);
+        EepromWrite(5, DEFAULT_LOW_SPEED | (DEFAULT_HIGH_SPEED << 8));
+        EepromWrite(6, DEFAULT_SLOW_RATE);
+        EepromWrite(7, DEFAULT_FAST_RATE);
+        EepromWrite(8, DEFAULT_TURN_SLOPE);
+        EepromWrite(9, DEFAULT_TURN_ANGLE | (DEFAULT_TURN_DELAY << 8));
+        EepromWrite(10, DEFAULT_STATUS_RATE);
+        EepromWrite(11, DEFAULT_GPS_BAUD & 0xFFFF);
+        EepromWrite(12, DEFAULT_GPS_BAUD >> 16);
+        EepromWrite(13, DEFAULT_CALL[0] | (DEFAULT_CALL[1] << 8));
+        EepromWrite(14, DEFAULT_CALL[2] | (DEFAULT_CALL[3] << 8));
+        EepromWrite(15, DEFAULT_CALL[4] | (DEFAULT_CALL[5] << 8));
+        EepromWrite(16, DEFAULT_CALL_SSID);
+        EepromWrite(17, DEFAULT_PATH_1[0] | (DEFAULT_PATH_1[1] << 8));
+        EepromWrite(18, DEFAULT_PATH_1[2] | (DEFAULT_PATH_1[3] << 8));
+        EepromWrite(19, DEFAULT_PATH_1[4] | (DEFAULT_PATH_1[5] << 8));
+        EepromWrite(20, DEFAULT_PATH_1_SSID);
+        EepromWrite(21, DEFAULT_PATH_2[0] | (DEFAULT_PATH_2[1] << 8));
+        EepromWrite(22, DEFAULT_PATH_2[2] | (DEFAULT_PATH_2[3] << 8));
+        EepromWrite(23, DEFAULT_PATH_2[4] | (DEFAULT_PATH_2[5] << 8));
+        EepromWrite(24, DEFAULT_PATH_2_SSID);
+        EepromWrite(25, DEFAULT_PARK_MICE_MESSAGE | (DEFAULT_DRIVE_MICE_MESSAGE << 8));
+        char *info = DEFAULT_STATUS_TEXT;
         int len = strlen(info);
-        EepromWrite(100, len);
-        for (int i = 0; i < len; i++) {
-            EepromWrite(101 + i, info[i]);
+        EepromWrite(26, len);
+        for (int i = 0; i < len - 1; i += 2) {
+            EepromWrite(100 + (i / 2), info[i] | (info[i + 1] << 8));
+        }
+        if (len % 2) {
+            EepromWrite(100 + (len / 2), info[len - 1]);
         }
     }
 
@@ -77,20 +80,18 @@ void ConfigInit(void) {
     EepromRead(24, &config.path[1].ssid);
     EepromRead(25, &config.MicE.pd_combined);
 
-    uint8_t status = EepromRead(100, &config.status.length);
+    uint8_t status = EepromRead(26, &config.status.length);
     if (status == EE_OK && config.status.length != 0) {
-        config.status.str[0] = '>';
-        int i;
-        for (i = 1; i < config.status.length; i++) {
+        for (int i = 0; i < config.status.length; i += 2) {
             uint16_t c;
-            status = EepromRead(i + 100, &c);
+            status = EepromRead(100 + (i / 2), &c);
             if (status == EE_OK) {
-                config.status.str[i] = (char) c;
+                config.status.str[i] = (char) (c & 0xFF);
+                config.status.str[i + 1] = (char) (c >> 8);
             } else {
                 break;
             }
         }
-        config.status.str[i] = 0;
     }
 }
 

@@ -26,7 +26,7 @@ uint8_t EepromFormat(void) {
 }
 
 uint8_t EepromWrite(uint16_t addr, uint16_t data) {
-    if (addr > EE_VAR_MAX) {
+    if (addr >= EE_VAR_MAX) {
         return EE_VADDR_TOO_HIGH;
     }
 
@@ -36,7 +36,7 @@ uint8_t EepromWrite(uint16_t addr, uint16_t data) {
         return EE_NO_VALID_PAGE;
     }
 
-    for (uint32_t i = (page + 2); i < (page + EE_PAGE_SIZE); i += 4) {
+    for (uint32_t i = (page + 2); i <= (page + EE_PAGE_SIZE - 6); i += 4) {
         uint16_t va = *(__IO uint16_t *) (i);
         uint16_t ed = *(__IO uint16_t *) (i + 2);
 
@@ -51,7 +51,7 @@ uint8_t EepromWrite(uint16_t addr, uint16_t data) {
 }
 
 uint8_t EepromRead(uint16_t addr, uint16_t *data) {
-    if (addr > EE_VAR_MAX) {
+    if (addr >= EE_VAR_MAX) {
         return EE_VADDR_TOO_HIGH;
     }
 
@@ -61,7 +61,7 @@ uint8_t EepromRead(uint16_t addr, uint16_t *data) {
         return EE_NO_VALID_PAGE;
     }
 
-    for (uint32_t i = (page + EE_PAGE_SIZE - 2); i >= (page + 2); i -= 4) {
+    for (uint32_t i = (page + EE_PAGE_SIZE - 6); i >= (page + 2); i -= 4) {
         uint16_t va = *(__IO uint16_t *) (i);
 
         if (va == addr) {
@@ -98,12 +98,14 @@ static uint8_t TransferPage(uint16_t addr, uint16_t data) {
     int pt = nextPage + 6;
 
     for (int va = 0; va <= EE_VAR_MAX; va++) {
-        uint16_t ed;
-        uint8_t s = EepromRead(va, &ed);
-        if (s == EE_OK) {
-            FlashWriteHalfWord(pt, addr);
-            FlashWriteHalfWord(pt + 2, data);
-            pt += 4;
+        if (va != addr) {
+            uint16_t ed;
+            uint8_t s = EepromRead(va, &ed);
+            if (s == EE_OK) {
+                FlashWriteHalfWord(pt, va);
+                FlashWriteHalfWord(pt + 2, ed);
+                pt += 4;
+            }
         }
     }
 

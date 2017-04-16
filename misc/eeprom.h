@@ -21,9 +21,6 @@ enum {
 #define EE_FIRST_PAGE   EE_PAGE0_BASE
 #define EE_LAST_PAGE    EE_PAGE1_BASE
 
-#define EE_PAGE0        0
-#define EE_PAGE1        1
-
 #define EE_VALID_PAGE   0x0000
 #define EE_EMPTY_PAGE   0xFFFF
 

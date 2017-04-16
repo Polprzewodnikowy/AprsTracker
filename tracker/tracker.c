@@ -72,21 +72,24 @@ void TrackerUpdate(void) {
             beaconTimer = 0;
             lastCourse = course;
         }
+
         GPIOC->BSRR = GPIO_BSRR_BS_9;
     } else {
         GPIOC->BSRR = GPIO_BSRR_BR_9;
     }
-    if (statusTimer >= config->status.rate && config->status.length) {
+
+    if (statusTimer >= config->status.rate && config->status.rate != 0 && config->status.length > 0) {
         AX25Msg status;
         AX25InitFrame(&status);
         AX25SetCall(&status.source, config->call.str, config->call.ssid);
-        AX25SetDestination(&status, "APZMF2", 0);
+        AX25SetDestination(&status, VERSION_STRING, 0);
         AX25AddPath(&status, config->path[0].str, config->path[0].ssid);
         AX25AddPath(&status, config->path[1].str, config->path[1].ssid);
         AX25SetInfo(&status, config->status.str, config->status.length);
         AprsSendFrame(&status);
         statusTimer = 0;
     }
+
     ++beaconTimer;
     ++statusTimer;
     TrackerDisplayUpdate();

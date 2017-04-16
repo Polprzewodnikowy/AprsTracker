@@ -10,7 +10,7 @@
 
 #include "aprs.h"
 
-#define CONFIG_VALID    0x55AA
+#define CONFIG_VALID                0x55AA
 
 #define DEFAULT_PARK_SYMBOL         ('P')
 #define DEFAULT_PARK_SYMBOL_TABLE   ('\\')
@@ -36,6 +36,8 @@
 #define DEFAULT_PATH_1_SSID         (1)
 #define DEFAULT_PATH_2              ("WIDE2 ")
 #define DEFAULT_PATH_2_SSID         (1)
+
+#define VERSION_STRING              ("APZMF2")
 
 typedef struct {
     union {
@@ -92,12 +94,6 @@ typedef struct {
     } turn;
 
     struct {
-        uint16_t rate;
-        char str[128];
-        uint16_t length;
-    } status;
-
-    struct {
         union {
             uint32_t baud;
             struct {
@@ -130,9 +126,16 @@ typedef struct {
         };
         uint16_t ssid;
     } path[2];
+
+    struct {
+        uint16_t rate;
+        char str[128];
+        uint16_t length;
+    } status;
 } Config;
 
 void ConfigInit(void);
 Config *ConfigGet(void);
+void ConfigUpdate(void);
 
 #endif /* MISC_CONFIG_H_ */

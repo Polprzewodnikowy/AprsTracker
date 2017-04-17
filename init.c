@@ -13,6 +13,7 @@
 #include "aprs.h"
 #include "gps.h"
 #include "tracker.h"
+#include "usb_device.h"
 
 void SystemInit(void) {
     FLASH->ACR = FLASH_ACR_LATENCY;
@@ -41,6 +42,7 @@ void SystemInit(void) {
     AprsInit();
     GpsInit();
     TrackerInit();
+    UsbInit();
 
     GpioConfig(GPIOC, 6, GPIO_OUT_PP_LOW);
     GpioConfig(GPIOC, 7, GPIO_OUT_PP_LOW);

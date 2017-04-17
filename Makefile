@@ -59,7 +59,7 @@ AS_DEFS =
 
 # include directories (absolute or relative paths to additional folders with
 # headers, current folder is always included)
-INC_DIRS = inc aprs gps misc tracker
+INC_DIRS = inc aprs gps misc tracker usb usb/hal usb/hal/Legacy usb/core usb/class
 
 # library directories (absolute or relative paths to additional folders with
 # libraries)
@@ -71,7 +71,7 @@ LIBS =
 
 # additional directories with source files (absolute or relative paths to
 # folders with source files, current folder is always included)
-SRCS_DIRS = aprs gps misc tracker
+SRCS_DIRS = aprs gps misc tracker usb usb/hal usb/hal/Legacy usb/core usb/class
 
 # extension of C++ files
 CXX_EXT = cpp

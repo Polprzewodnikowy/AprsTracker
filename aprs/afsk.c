@@ -38,7 +38,7 @@ void AfskInit(void) {
     TIM14->ARR = (FREQ / AFSK_BAUD) - 1;
     TIM14->DIER = TIM_DIER_UIE;
     TIM14->CR1 = TIM_CR1_ARPE | TIM_CR1_URS;
-    NVIC_SetPriority(TIM14_IRQn, 0);
+    NVIC_SetPriority(TIM14_IRQn, 1);
     NVIC_EnableIRQ(TIM14_IRQn);
 
     preambleRemaining = 0;

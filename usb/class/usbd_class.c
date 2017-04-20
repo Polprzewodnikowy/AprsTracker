@@ -9,7 +9,7 @@
 #include "usbd_core.h"
 
 uint8_t cdcDataBuffer[CDC_DATA_PACKET_SIZE];
-uint8_t conifgDataBuffer[CONFIG_PACKET_SIZE];
+uint8_t configDataBuffer[CONFIG_PACKET_SIZE];
 
 static uint8_t USBD_Class_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx);
 static uint8_t USBD_Class_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx);
@@ -37,13 +37,13 @@ USBD_ClassTypeDef USBD_Class = {
         USBD_Class_GetUsrStrDescriptor, //GetUsrStrDescriptor
 };
 
-static uint8_t USBD_Class_ConfigDescriptor[0x62] = {
+static uint8_t USBD_Class_ConfigDescriptor[0x6D] = {
 
         //Configuration Descriptor:
         //------------------------------
         0x09, //bLength
         USB_DESC_TYPE_CONFIGURATION, //bDescriptorType
-        0x62, //wTotalLength[0]
+        0x6D, //wTotalLength[0]
         0x00, //wTotalLength[1]
         0x03, //bNumInterfaces
         0x01, //bConfigurationValue
@@ -147,6 +147,17 @@ static uint8_t USBD_Class_ConfigDescriptor[0x62] = {
         HIBYTE(CDC_DATA_PACKET_SIZE), //wMaxPacketSize[1]
         0x00, //bInterval
 
+        //Interface Association Descriptor:
+        //------------------------------
+        0x08, //bLength
+        0x0B, //bDescriptorType
+        0x02, //bFirstInterface
+        0x01, //bInterfaceCount
+        0xFF, //bFunctionClass (Communication Device Class)
+        0xFF, //bFunctionSubClass (Abstract Control Model)
+        0xFF, //bFunctionProtocol
+        0x09, //iFunction ("AprsTracker")
+
         //Interface Descriptor:
         //------------------------------
         0x09, //bLength
@@ -165,8 +176,8 @@ static uint8_t USBD_Class_ConfigDescriptor[0x62] = {
         USB_DESC_TYPE_ENDPOINT, //bDescriptorType
         CONFIG_OUT_EP, //bEndpointAddress (OUT Endpoint)
         0x02, //bmAttributes (Transfer: Bulk / Synch: None / Usage: Data)
-        LOBYTE(CDC_DATA_PACKET_SIZE), //wMaxPacketSize[0]
-        HIBYTE(CDC_DATA_PACKET_SIZE), //wMaxPacketSize[1]
+        LOBYTE(CONFIG_PACKET_SIZE), //wMaxPacketSize[0]
+        HIBYTE(CONFIG_PACKET_SIZE), //wMaxPacketSize[1]
         0x00, //bInterval
 
         //Endpoint Descriptor:
@@ -189,7 +200,7 @@ static uint8_t USBD_Class_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
     USBD_LL_OpenEP(pdev, CONFIG_IN_EP, USBD_EP_TYPE_BULK, CONFIG_PACKET_SIZE);
 
     USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, cdcDataBuffer, CDC_DATA_PACKET_SIZE);
-    USBD_LL_PrepareReceive(pdev, CONFIG_OUT_EP, conifgDataBuffer, CONFIG_PACKET_SIZE);
+    USBD_LL_PrepareReceive(pdev, CONFIG_OUT_EP, configDataBuffer, CONFIG_PACKET_SIZE);
     return USBD_OK;
 }
 
@@ -248,12 +259,13 @@ static uint8_t USBD_Class_EP0_RxReady(USBD_HandleTypeDef *pdev) {
 }
 
 static uint8_t USBD_Class_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum) {
+    int length = USBD_LL_GetRxDataSize(pdev, epnum);
     switch (epnum) {
-    case CDC_OUT_EP: {
-        int length = USBD_LL_GetRxDataSize(pdev, epnum);
-        USBD_LL_Transmit(pdev, CDC_IN_EP, cdcDataBuffer, length);
+    case CDC_OUT_EP:
         USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, cdcDataBuffer, CDC_DATA_PACKET_SIZE);
-    }
+        break;
+    case CONFIG_OUT_EP:
+        USBD_LL_PrepareReceive(pdev, CONFIG_OUT_EP, configDataBuffer, CONFIG_PACKET_SIZE);
         break;
     }
 

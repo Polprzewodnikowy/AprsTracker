@@ -14,9 +14,9 @@ extern USBD_ClassTypeDef USBD_Class;
 
 #define CDC_IN_EP                       0x81
 #define CDC_OUT_EP                      0x01
-#define CDC_CMD_EP                      0x82
-#define CONFIG_IN_EP                    0x83
-#define CONFIG_OUT_EP                   0x03
+#define CDC_CMD_EP                      0x83
+#define CONFIG_IN_EP                    0x82
+#define CONFIG_OUT_EP                   0x02
 
 #define CDC_DATA_PACKET_SIZE            64
 #define CDC_CMD_PACKET_SIZE             8

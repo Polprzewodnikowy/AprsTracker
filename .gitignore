@@ -37,6 +37,9 @@
 # .settings folder
 /.settings
 
+# Visual Studio Code
+/.vscode
+
 # =========================
 # Operating System Files
 # =========================

@@ -26,4 +26,11 @@ extern USBD_ClassTypeDef USBD_Class;
 #define CDC_REQ_GET_LINE_CODING         0x21
 #define CDC_REQ_SET_CONTROL_LINE_STATE  0x22
 
+typedef struct {
+    uint32_t dwDTERate;
+    uint8_t bCharFormat;
+    uint8_t bParityType;
+    uint8_t bDataBits;
+} CDCLineCoding;
+
 #endif /* USB_CLASS_USBD_CLASS_H_ */

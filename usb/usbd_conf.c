@@ -20,15 +20,15 @@ void USB_IRQHandler(void) {
 void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle) {
     if (pcdHandle->Instance == USB) {
         RCC->APB1ENR |= RCC_APB1ENR_USBEN;
-        HAL_NVIC_SetPriority(USB_IRQn, 0, 0);
-        HAL_NVIC_EnableIRQ(USB_IRQn);
+        NVIC_SetPriority(USB_IRQn, 0);
+        NVIC_EnableIRQ(USB_IRQn);
     }
 }
 
 void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle) {
     if (pcdHandle->Instance == USB) {
         RCC->APB1ENR &= ~RCC_APB1ENR_USBEN;
-        HAL_NVIC_DisableIRQ(USB_IRQn);
+        NVIC_DisableIRQ(USB_IRQn);
     }
 }
 

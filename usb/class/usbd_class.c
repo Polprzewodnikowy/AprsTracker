@@ -213,13 +213,6 @@ static uint8_t USBD_Class_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
     return USBD_OK;
 }
 
-typedef struct {
-    uint32_t dwDTERate;
-    uint8_t bCharFormat;
-    uint8_t bParityType;
-    uint8_t bDataBits;
-} CDCLineCoding;
-
 static uint8_t USBD_Class_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req) {
     uint8_t interface = 0;
     static CDCLineCoding lineCoding = { 9600, 0, 0, 8 };
@@ -259,7 +252,7 @@ static uint8_t USBD_Class_EP0_RxReady(USBD_HandleTypeDef *pdev) {
 }
 
 static uint8_t USBD_Class_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum) {
-    int length = USBD_LL_GetRxDataSize(pdev, epnum);
+    //int length = USBD_LL_GetRxDataSize(pdev, epnum);
     switch (epnum) {
     case CDC_OUT_EP:
         USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, cdcDataBuffer, CDC_DATA_PACKET_SIZE);

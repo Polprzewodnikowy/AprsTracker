@@ -8,12 +8,7 @@
 #ifndef USB_STM32F0XX_HAL_CONF_H_
 #define USB_STM32F0XX_HAL_CONF_H_
 
-#define HAL_CORTEX_MODULE_ENABLED
 #define HAL_PCD_MODULE_ENABLED
-
-#ifdef HAL_CORTEX_MODULE_ENABLED
-    #include "stm32f0xx_hal_cortex.h"
-#endif
 
 #ifdef HAL_PCD_MODULE_ENABLED
     #include "stm32f0xx_hal_pcd.h"

@@ -119,6 +119,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev) {
     HAL_PCDEx_PMAConfig((PCD_HandleTypeDef*) pdev->pData, 0x82, PCD_SNG_BUF, 0x180);
 
     HAL_PCDEx_PMAConfig((PCD_HandleTypeDef*) pdev->pData, 0x83, PCD_SNG_BUF, 0x1C0);
+    HAL_PCDEx_PMAConfig((PCD_HandleTypeDef*) pdev->pData, 0x84, PCD_SNG_BUF, 0x200);
 
     return USBD_OK;
 }

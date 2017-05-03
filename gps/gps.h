@@ -8,11 +8,15 @@
 #ifndef GPS_GPS_H_
 #define GPS_GPS_H_
 
-#include "minmea.h"
+#include "misc/def.h"
+
+#include "gps/minmea.h"
+#include "misc/config.h"
 
 #define GPS_BUFFER_SIZE 128
 
-void GpsInit(void);
+void GpsInit(Config *c);
+void GpsProcess(void);
 int GpsIsValid(void);
 struct minmea_sentence_rmc *GpsGetRMC(void);
 struct minmea_sentence_gga *GpsGetGGA(void);

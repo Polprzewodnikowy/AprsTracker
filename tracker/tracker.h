@@ -8,7 +8,11 @@
 #ifndef TRACKER_TRACKER_H_
 #define TRACKER_TRACKER_H_
 
-void TrackerInit(void);
+#include "misc/def.h"
+
+#include "misc/config.h"
+
+void TrackerInit(Config *c);
 void TrackerUpdate(void);
 
 #endif /* TRACKER_TRACKER_H_ */

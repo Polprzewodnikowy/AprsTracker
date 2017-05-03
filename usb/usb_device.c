@@ -17,9 +17,3 @@ void UsbInit(void) {
     USBD_RegisterClass(&hUsbDeviceFS, &USBD_Class);
     USBD_Start(&hUsbDeviceFS);
 }
-
-void UsbTransmitCDC(uint8_t *data, int length) {
-    if (hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
-        USBD_LL_Transmit(&hUsbDeviceFS, CDC_IN_EP, data, length);
-    }
-}

@@ -5,15 +5,16 @@
  *      Author: korgeaux
  */
 
-#include "stm32f0xx.h"
-#include "gpio.h"
-#include "eeprom.h"
-#include "config.h"
-#include "lcd.h"
-#include "aprs.h"
-#include "gps.h"
-#include "tracker.h"
-#include "usb_device.h"
+#include "misc/def.h"
+
+#include "afsk/afsk.h"
+#include "aprs/aprs.h"
+#include "gps/gps.h"
+#include "misc/config.h"
+#include "misc/eeprom.h"
+#include "misc/gpio.h"
+#include "tracker/tracker.h"
+#include "usb/usb_device.h"
 
 void SystemInit(void) {
     FLASH->ACR = FLASH_ACR_LATENCY;
@@ -36,16 +37,18 @@ void SystemInit(void) {
     RCC->AHBENR |= RCC_AHBENR_DMAEN;
 
     GpioInit();
-    EepromInit();
     ConfigInit();
-    LcdInit();
-    AprsInit();
-    GpsInit();
-    TrackerInit();
+    Config *config = ConfigGet();
+    AfskInit(config);
+    AX25Init();
+    GpsInit(config);
+    TrackerInit(config);
     UsbInit();
 
     GpioConfig(GPIOC, 6, GPIO_OUT_PP_LOW);
     GpioConfig(GPIOC, 7, GPIO_OUT_PP_LOW);
     GpioConfig(GPIOC, 8, GPIO_OUT_PP_LOW);
     GpioConfig(GPIOC, 9, GPIO_OUT_PP_LOW);
+
+    SysTick_Config(FREQ / 1000);
 }

@@ -8,7 +8,9 @@
 #ifndef APRS_AFSK_H_
 #define APRS_AFSK_H_
 
-#include <stddef.h>
+#include "misc/def.h"
+
+#include "misc/config.h"
 
 #define PTT_GPIO            GPIOA
 #define PTT_PIN             5
@@ -20,9 +22,9 @@
 #define AFSK_MARK_TONE      1200
 #define AFSK_SPACE_TONE     2200
 
-void AfskInit(void);
-void AfskTxStart(void);
-void AfskTxStop(void);
+void AfskInit(Config *c);
+void AfskSetPreambleLength(uint32_t length);
+void AfskSetTailLength(uint32_t length);
 void AfskPutChar(char c);
 void AfskTransmit(char *buffer, size_t size);
 

@@ -5,7 +5,7 @@
  *      Author: korgeaux
  */
 
-#include "stm32f0xx.h"
+#include "misc/flash.h"
 
 void FlashUnlock(void) {
 

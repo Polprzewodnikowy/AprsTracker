@@ -8,6 +8,8 @@
 #ifndef MISC_FLASH_H_
 #define MISC_FLASH_H_
 
+#include "misc/def.h"
+
 void FlashUnlock(void);
 void FlashLock(void);
 void FlashPageErase(uint32_t addr);

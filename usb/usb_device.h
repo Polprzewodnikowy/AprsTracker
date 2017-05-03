@@ -12,7 +12,11 @@
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
+enum {
+    TNC_PORT,
+    CONFIG_PORT,
+};
+
 void UsbInit(void);
-void UsbTransmitCDC(uint8_t *data, int length);
 
 #endif /* USB_USB_DEVICE_H_ */

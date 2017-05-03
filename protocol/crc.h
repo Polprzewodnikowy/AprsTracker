@@ -8,6 +8,8 @@
 #ifndef APRS_CRC_H_
 #define APRS_CRC_H_
 
+#include "misc/def.h"
+
 enum CrcPoly {
     CRC_POLY_7, CRC_POLY_8, CRC_POLY_16, CRC_POLY_32,
 };

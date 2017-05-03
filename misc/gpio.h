@@ -9,6 +9,8 @@
 #ifndef MISC_GPIO_H_
 #define MISC_GPIO_H_
 
+#include "misc/def.h"
+
 #define GPIO_MODER_mask                     3
 #define GPIO_MODER_IN_value                 0
 #define GPIO_MODER_OUT_value                1

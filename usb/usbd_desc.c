@@ -6,8 +6,8 @@
  */
 
 #include "usbd_desc.h"
-#include "usbd_core.h"
 #include "usbd_conf.h"
+#include "core/usbd_core.h"
 
 #define USBD_VID                        0x0483
 #define USBD_PID                        0x2002

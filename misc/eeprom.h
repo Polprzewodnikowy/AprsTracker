@@ -8,6 +8,8 @@
 #ifndef MISC_EEPROM_H_
 #define MISC_EEPROM_H_
 
+#include "misc/def.h"
+
 enum {
     EE_OK = 0, EE_NO_VALID_PAGE, EE_VARIABLE_NOT_FOUND, EE_PAGE_FULL, EE_VADDR_TOO_HIGH,
 };

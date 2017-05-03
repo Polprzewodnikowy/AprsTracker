@@ -5,33 +5,32 @@
  *      Author: korgeaux
  */
 
-#include <string.h>
-#include "stm32f0xx.h"
-#include "tracker.h"
+#include "misc/def.h"
 
-volatile int trackerTimer, trackerUpdate;
+#include "gps/gps.h"
+#include "tracker/tracker.h"
+#include "misc/config.h"
+
+volatile int tickTimer, tickUpdate;
 
 int main(void) {
-    trackerTimer = 0;
-    trackerUpdate = 0;
-    SysTick_Config(FREQ / 1000);
-
     while (1) {
-        if (trackerUpdate) {
-            trackerUpdate = 0;
+        GpsProcess();
+        if (tickUpdate) {
+            tickUpdate = 0;
             TrackerUpdate();
         }
     }
 }
 
 void SysTick_Handler(void) {
-    if (trackerTimer < 50) {
-        GPIOC->BSRR = GPIO_BSRR_BS_8;
+    if (tickTimer < 50) {
+       GPIOC->BSRR = GPIO_BSRR_BS_8;
     } else {
-        GPIOC->BSRR = GPIO_BSRR_BR_8;
+       GPIOC->BSRR = GPIO_BSRR_BR_8;
     }
-    if (trackerTimer++ >= 1000) {
-        trackerTimer = 0;
-        trackerUpdate = 1;
+    if (tickTimer++ >= 1000) {
+        tickTimer = 0;
+        tickUpdate = 1;
     }
 }

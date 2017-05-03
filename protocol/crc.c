@@ -5,8 +5,7 @@
  *      Author: korgeaux
  */
 
-#include "stm32f0xx.h"
-#include "crc.h"
+#include "protocol/crc.h"
 
 void CrcInit(uint32_t poly, uint32_t init, enum CrcPoly polyWidth, enum CrcInv invIn, enum CrcInv invOut) {
     RCC->AHBENR |= RCC_AHBENR_CRCEN;

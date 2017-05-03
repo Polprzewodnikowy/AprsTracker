@@ -5,15 +5,15 @@
  *      Author: korgeaux
  */
 
-#include "stm32f0xx.h"
-#include "eeprom.h"
-#include "flash.h"
+#include "misc/eeprom.h"
 
-static uint8_t TransferPage(uint16_t addr, uint16_t data);
-static uint32_t FindValidPage(void);
+#include "misc/flash.h"
+
+static uint8_t transferPage(uint16_t addr, uint16_t data);
+static uint32_t findValidPage(void);
 
 void EepromInit(void) {
-    if (!FindValidPage()) {
+    if (!findValidPage()) {
         EepromFormat();
     }
 }
@@ -30,7 +30,7 @@ uint8_t EepromWrite(uint16_t addr, uint16_t data) {
         return EE_VADDR_TOO_HIGH;
     }
 
-    uint32_t page = FindValidPage();
+    uint32_t page = findValidPage();
 
     if (!page) {
         return EE_NO_VALID_PAGE;
@@ -47,7 +47,7 @@ uint8_t EepromWrite(uint16_t addr, uint16_t data) {
         }
     }
 
-    return TransferPage(addr, data);
+    return transferPage(addr, data);
 }
 
 uint8_t EepromRead(uint16_t addr, uint16_t *data) {
@@ -55,7 +55,7 @@ uint8_t EepromRead(uint16_t addr, uint16_t *data) {
         return EE_VADDR_TOO_HIGH;
     }
 
-    uint32_t page = FindValidPage();
+    uint32_t page = findValidPage();
 
     if (!page) {
         return EE_NO_VALID_PAGE;
@@ -74,8 +74,8 @@ uint8_t EepromRead(uint16_t addr, uint16_t *data) {
     return EE_VARIABLE_NOT_FOUND;
 }
 
-static uint8_t TransferPage(uint16_t addr, uint16_t data) {
-    uint32_t page = FindValidPage();
+static uint8_t transferPage(uint16_t addr, uint16_t data) {
+    uint32_t page = findValidPage();
 
     if (!page) {
         return EE_NO_VALID_PAGE;
@@ -115,7 +115,7 @@ static uint8_t TransferPage(uint16_t addr, uint16_t data) {
     return EE_OK;
 }
 
-static uint32_t FindValidPage(void) {
+static uint32_t findValidPage(void) {
     uint16_t page0Status = *(__IO uint16_t *) (EE_PAGE0_BASE);
     uint16_t page1Status = *(__IO uint16_t *) (EE_PAGE1_BASE);
 

@@ -5,25 +5,24 @@
  *      Author: korgeaux
  */
 
-#include <string.h>
-#include "stm32f0xx.h"
-#include "gps.h"
-#include "gpio.h"
-#include "minmea.h"
-#include "config.h"
+#include "gps/gps.h"
 
-char buffer[GPS_BUFFER_SIZE];
-volatile struct minmea_sentence_rmc rmc;
-volatile struct minmea_sentence_gga gga;
+#include "misc/gpio.h"
 
-void GpsInit(void) {
-    Config *config = ConfigGet();
+static Config *config;
+static char dmaBuffer[GPS_BUFFER_SIZE];
+static char lineBuffer[GPS_BUFFER_SIZE];
+static volatile bool lineAvaiable;
+static struct minmea_sentence_rmc rmc;
+static struct minmea_sentence_gga gga;
 
+void GpsInit(Config *c) {
+    config = c;
     GpioConfig(GPIOA, 1, GPIO_AF4_PP_HIGH);
 
     RCC->APB1ENR |= RCC_APB1ENR_USART4EN;
 
-    DMA1_Channel6->CMAR = (uint32_t) buffer;
+    DMA1_Channel6->CMAR = (uint32_t) dmaBuffer;
     DMA1_Channel6->CPAR = (uint32_t) &USART4->RDR;
     DMA1_Channel6->CNDTR = GPS_BUFFER_SIZE;
     DMA1_Channel6->CCR = DMA_CCR_MINC | DMA_CCR_EN;
@@ -35,6 +34,18 @@ void GpsInit(void) {
 
     NVIC_EnableIRQ(USART3_4_IRQn);
     NVIC_SetPriority(USART3_4_IRQn, 3);
+}
+
+void GpsProcess(void) {
+    if (lineAvaiable) {
+        lineAvaiable = false;
+        enum minmea_sentence_id id = minmea_sentence_id(lineBuffer, false);
+        if (id == MINMEA_SENTENCE_RMC) {
+            minmea_parse_rmc(&rmc, lineBuffer);
+        } else if (id == MINMEA_SENTENCE_GGA) {
+            minmea_parse_gga(&gga, lineBuffer);
+        }
+    }
 }
 
 int GpsIsValid(void) {
@@ -53,25 +64,13 @@ void USART3_4_IRQHandler(void) {
     if (USART4->ISR & USART_ISR_CMF) {
         USART4->ICR = USART_ICR_CMCF;
 
-        char line[GPS_BUFFER_SIZE];
-        int len;
-
         DMA1_Channel6->CCR &= ~DMA_CCR_EN;
-        len = GPS_BUFFER_SIZE - DMA1_Channel6->CNDTR;
+        int length = GPS_BUFFER_SIZE - DMA1_Channel6->CNDTR;
 
-        memset(line, 0, GPS_BUFFER_SIZE);
-        memcpy(line, buffer, len);
+        memset(lineBuffer, 0, GPS_BUFFER_SIZE);
+        memcpy(lineBuffer, dmaBuffer, length);
 
-        enum minmea_sentence_id id = minmea_sentence_id(line, false);
-        if (id == MINMEA_SENTENCE_RMC) {
-            struct minmea_sentence_rmc tmp;
-            minmea_parse_rmc(&tmp, line);
-            rmc = tmp;
-        } else if (id == MINMEA_SENTENCE_GGA) {
-            struct minmea_sentence_gga tmp;
-            minmea_parse_gga(&tmp, line);
-            gga = tmp;
-        }
+        lineAvaiable = true;
 
         DMA1_Channel6->CNDTR = GPS_BUFFER_SIZE;
         DMA1_Channel6->CCR |= DMA_CCR_EN;

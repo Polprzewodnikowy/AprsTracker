@@ -8,7 +8,7 @@
 #ifndef USB_USBD_DESC_H_
 #define USB_USBD_DESC_H_
 
-#include "usbd_def.h"
+#include "core/usbd_def.h"
 
 extern USBD_DescriptorsTypeDef FS_Desc;
 

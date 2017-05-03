@@ -8,9 +8,10 @@
 #ifndef APRS_APRS_H_
 #define APRS_APRS_H_
 
-#include <stddef.h>
-#include "ax25.h"
-#include "minmea.h"
+#include "misc/def.h"
+
+#include "gps/minmea.h"
+#include "protocol/ax25.h"
 
 #define MICE_A_MASK 0x04
 #define MICE_B_MASK 0x02
@@ -28,8 +29,8 @@ enum MicEMessage {
 };
 
 void AprsInit(void);
-void AprsSendFrame(AX25Msg *frame);
-void AprsSendMicEPosition(struct minmea_sentence_rmc *rmc, struct minmea_sentence_gga *gga, AX25Call *call,
-        AX25Call *path1, AX25Call *path2, enum MicEMessage message, char *info, char symbol, char symbolTable);
+void AprsSendMicEPosition(struct minmea_sentence_rmc *rmc, struct minmea_sentence_gga *gga, AX25Call *path, 
+    size_t pathLength, enum MicEMessage message, char symbol, char symbolTable, char *info, size_t infoLength);
+void AprsSendStatus(AX25Call *path, size_t pathLength, char *info, size_t infoLength);
 
 #endif /* APRS_APRS_H_ */

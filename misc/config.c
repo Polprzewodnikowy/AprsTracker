@@ -5,16 +5,14 @@
  *      Author: korgeaux
  */
 
-#include <string.h>
-#include "stm32f0xx.h"
-#include "config.h"
-#include "aprs.h"
-#include "eeprom.h"
+#include "misc/config.h"
+
+#include "misc/eeprom.h"
 
 #define TABLE_SIZE(x)   (sizeof(x) / sizeof(x[0]))
 
-static void ReadStatusText(char *str, uint16_t *len);
-static void WriteStatusText(char *str, uint16_t len);
+static void readStatusText(char *str, uint16_t *len);
+static void writeStatusText(char *str, uint16_t len);
 
 static Config config;
 static uint16_t *configPointers[] = {
@@ -74,6 +72,8 @@ void ConfigInit(void) {
         DEFAULT_PARK_MICE_MESSAGE | (DEFAULT_DRIVE_MICE_MESSAGE << 8),
     };
 
+    EepromInit();
+
     uint16_t valid;
     EepromRead(0, &valid);
     if (valid != CONFIG_VALID) {
@@ -90,7 +90,7 @@ void ConfigInit(void) {
         }
     }
 
-    ReadStatusText(config.status.str, &config.status.length);
+    readStatusText(config.status.str, &config.status.length);
 }
 
 Config *ConfigGet(void) {
@@ -109,13 +109,13 @@ void ConfigUpdate(void) {
     uint16_t len;
     char str[128];
     memset(str, 0, 128);
-    ReadStatusText(str, &len);
+    readStatusText(str, &len);
     if (len != config.status.length || strcmp(str, config.status.str)) {
-        WriteStatusText(config.status.str, config.status.length);
+        writeStatusText(config.status.str, config.status.length);
     }
 }
 
-static void ReadStatusText(char *str, uint16_t *len) {
+static void readStatusText(char *str, uint16_t *len) {
     uint8_t status = EepromRead(26, len);
     if (status == EE_OK && *len != 0) {
         for (int i = 0; i < *len; i += 2) {
@@ -133,7 +133,7 @@ static void ReadStatusText(char *str, uint16_t *len) {
     }
 }
 
-static void WriteStatusText(char *str, uint16_t len) {
+static void writeStatusText(char *str, uint16_t len) {
     EepromWrite(26, len);
     for (int i = 0; i < len - 1; i += 2) {
         EepromWrite(100 + (i / 2), str[i] | (str[i + 1] << 8));

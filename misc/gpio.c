@@ -6,8 +6,7 @@
  *      Author: korgeaux
  */
 
-#include "stm32f0xx.h"
-#include "gpio.h"
+#include "misc/gpio.h"
 
 void GpioInit(void) {
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOCEN | RCC_AHBENR_GPIODEN

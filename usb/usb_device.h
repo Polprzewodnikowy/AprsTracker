@@ -12,11 +12,6 @@
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
-enum {
-    TNC_PORT,
-    CONFIG_PORT,
-};
-
 void UsbInit(void);
 
 #endif /* USB_USB_DEVICE_H_ */
